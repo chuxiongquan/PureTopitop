@@ -1,0 +1,9 @@
+Before autodetection of python is added to the makefiles, you must follow the following:
+make
+make pygamesman
+
+To play mpyckle:
+./mpyckle or python ./mpyckle
+
+Support is provided for JIT compiling if you have installed psyco.
+Thanks to hevanm for creating nice make rules.

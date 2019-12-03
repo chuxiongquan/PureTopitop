@@ -1,0 +1,40 @@
+##############################################################################
+#
+#  Top-level Makefile for GAMESMAN
+#  The Finite, Two-person Perfect-Information Game Generator
+#
+#  (G)ame-independent
+#  (A)utomatic
+#  (M)ove-tree
+#  (E)xhaustive
+#  (S)earch,
+#  (M)anipulation
+#  (A)nd
+#  (N)avigation
+#
+#  Dan Garcia, 05-15-95
+#  ddgarcia@cs.berkeley.edu
+#
+##############################################################################
+
+
+### @WARNGC@ Makefile.in
+
+# @configure_input@
+
+all: Makefile
+	@$(MAKE) -w -C src all
+
+clean:
+	cd src && $(MAKE) clean
+	rm -rf *~ test-*
+
+memdebug:
+	@$(MAKE) -w -C src memdebug
+
+dist:
+	cd src && $(MAKE) dist
+
+dist-clean: clean
+	@$(MAKE) -w -C src dist-clean
+	rm -rf Makefile configure config.status config.log *~ autom4te.cache
