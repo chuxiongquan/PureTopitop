@@ -29,6 +29,9 @@
   **			                 Wrote Primitive() (unsure if it is finished or not)
   **      02/26/2006 - Not sure if total num of positions should include player
 
+ // Revision 1.55  2019/12/03 15:54:20  chuxiongquan
+ // recover the broken version
+ //
  // $Log: not supported by cvs2svn $
  // Revision 1.54  2007/05/17 01:29:09  alexchoy
  // *** empty log message ***
@@ -484,8 +487,6 @@ PlayerTurn gWhosTurn = Blue;
 MOVE lastMove = -1;             //If lastMove = -1, there has been no last move
 PositionList allPositions = NULL;
 
-BoardAndTurn globalBoard = NULL;
-
 /*************************************************************************
  **
  ** Function Prototypes
@@ -856,8 +857,6 @@ POSITION DoMove(POSITION position, MOVE move) {
 	newPosition = arrayHash(board);
 
 	if (DEBUG_DM) { printf("NEXT BOARD# = %d\n", (int)newPosition); }
-
-	globalBoard = board;
 
 	SafeFree(newMove);
 
@@ -1323,6 +1322,7 @@ MOVE ConvertTextInputToMove(STRING input)
 	GMove newMove = (GMove)SafeMalloc(sizeof(struct cleanMove));
 
 	printf("ConvertTextInputToMove, getFrontFromAllPositions() call - %d\n", getFrontFromAllPositions());
+	BoardAndTurn board = arrayUnhash(getFrontFromAllPositions());
 
 	if (DEBUG_CTITM) {
 		printf("First input = %c\nSecond input = %c\n", first, second);
@@ -1344,7 +1344,7 @@ MOVE ConvertTextInputToMove(STRING input)
 	}
 	else {
 		newMove->fromPos = (int)(first - '0');
-		newMove->movePiece = CharToHashBoardPiece(globalBoard->theBoard[newMove->fromPos - 1]);
+		newMove->movePiece = CharToHashBoardPiece(board->theBoard[newMove->fromPos - 1]);
 	}
 
 	thisMove = hashMove(newMove);
@@ -1356,9 +1356,9 @@ MOVE ConvertTextInputToMove(STRING input)
 	}
 
 	SafeFree(newMove);
-	//SafeFree(board->data);
-	//SafeFree(board->theBoard);
-	//SafeFree(board);
+	SafeFree(board->data);
+	SafeFree(board->theBoard);
+	SafeFree(board);
 
 	if (DEBUG_CTITM) { printf("\n***** END CONVERT TEXT INPUT TO MOVE *****\n"); }
 
@@ -2101,246 +2101,6 @@ void removeFrontFromAllPositions() {
 	}
 }
 
-/*int checkValidBoardPositions() {
-  int l, s, b, cnt, allValid = 1;
-  BoardAndTurn boardTurn;
-
-  for (b = 0; l < maxB; l++) {
-  for (s = 0; s < maxS; s++) {
-  for (l = 0; b < maxL; b++) {
-  boardTurn = arrayUnhash(b + (s * maxB) + (l * maxS * maxB));
-  for (cnt = 0; cnt < boardSize; cnt++) {
-  if (CharToThreePiece(boardTurn->theBoard[cnt]) == NULL) {
-  // handle error case (add to an array, continue to generate list, etc)
-  // will do this later
-  allValid = 0;
-  }
-  }
-  }
-  }
-  }
-  return allValid;
-  }*/
-
-
-  // $Log: not supported by cvs2svn $
-  // Revision 1.54  2007/05/17 01:29:09  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.53  2007/05/16 22:37:15  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.52  2007/05/08 00:23:15  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.51  2007/05/02 22:34:47  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.50  2007/04/25 20:01:19  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.49  2007/04/24 07:50:32  alexchoy
-  // finished TierChildren()
-  //
-  // Revision 1.48  2007/04/23 23:52:31  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.47  2007/04/23 23:26:08  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.46  2007/04/22 01:30:18  alexchoy
-  // initial TIERing code almost complete
-  //
-  // Revision 1.45  2007/04/09 22:28:20  alexchoy
-  // minor changes
-  //
-  // Revision 1.44  2007/04/09 22:25:41  alexchoy
-  // minor changes
-  //
-  // Revision 1.43  2007/04/05 04:51:07  alexchoy
-  // mtopitop with TIERing, not done yet
-  //
-  // Revision 1.1  2007/04/01 20:49:49  alexchoy
-  // TIERing topitop
-  //
-  // Revision 1.42  2006/10/17 10:45:21  max817
-  // HUGE amount of changes to all generic_hash games, so that they call the
-  // new versions of the functions.
-  //
-  // Revision 1.41  2006/04/17 09:37:38  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.40  2006/04/16 07:07:29  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.39  2006/04/16 07:05:37  mikehamada
-  // Updated kHelpTextInterface & kHelpOnYourTurn
-  // help strings.
-  //
-  // Revision 1.38  2006/04/15 07:32:41  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.37  2006/04/15 07:29:30  mikehamada
-  // Updated PrintPosition() format and UI!
-  //
-  // Revision 1.36  2006/04/13 11:00:29  mikehamada
-  // Fixed Undo!   Keeps a local, global list of all POSITIONS
-  // and updates the list accordingly.
-  //
-  // Revision 1.35  2006/04/11 03:03:36  alexchoy
-  // added some comments and 'r' input
-  //
-  // Revision 1.34  2006/04/11 00:54:26  mikehamada
-  // Testing Hash
-  //
-  // Revision 1.33  2006/04/10 06:43:19  mikehamada
-  // WORKING TOPITOP!!!!
-  //
-  // Revision 1.32  2006/04/10 06:16:04  mikehamada
-  // Removed needless comments and turned off all debugs
-  //
-  // Revision 1.31  2006/04/10 06:14:47  mikehamada
-  // Removed prevBoard, curBoard, smallSandPiles, largeSandPiles,
-  // blueBuckets, redBuckets, blueCastles, redCastles global variable
-  // dependence and incorporated it into a single new structure
-  // BoardData that is now apart of the BoardAndTurn structure.
-  // arrayUnhash will set these values correctly when looking through
-  // the board for each board.  So now...UNDO and changing the order
-  // of players works!!!
-  //
-  // Revision 1.30  2006/04/10 01:54:11  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.29  2006/04/05 05:15:14  alexchoy
-  // error when using arrayUnhash with generic_hash_turn(), which always returns Red (2) after the first (Blue's) move
-  //
-  // Revision 1.28  2006/04/05 04:01:34  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.27  2006/04/05 03:35:39  alexchoy
-  // *** empty log message ***
-  //
-  // Revision 1.26  2006/04/04 23:47:46  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.25  2006/04/04 23:46:20  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.24  2006/04/04 23:33:12  mikehamada
-  // A WHOLE BUNCH of changes...but IT WORKS!
-  // Still must work out the bugs with UNDO though...
-  //
-  // Revision 1.23  2006/03/29 02:50:51  mikehamada
-  // Hash Not Working yet...
-  //
-  // Revision 1.22  2006/03/29 01:44:41  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.21  2006/03/28 02:03:30  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.20  2006/03/28 00:22:15  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.19  2006/03/20 02:21:09  mikehamada
-  // Finished arrayHash() and arrayUnhash()?
-  //
-  // Revision 1.18  2006/03/15 07:46:12  mikehamada
-  // Added HASHBLANK, HASHSANDPILE, HASHBLUEBUCKET, HASHREDBUCKET defines.
-  //
-  // Added BoardRep representation and ThreePiece representation (for a board, use a ThreePiece array!).
-  //
-  // Updated InitializeGame() to use LSB generic_hash_init (internal board will still be kept as a BoardAndTurn though!).
-  //
-  // Added ThreePieceToBoardPiece(), ThreePieceToChar(), BoardPieceToThreePiece(), CharToThreePiece() methods used for arrayHash() and arrayUnhash().
-  //
-  // Revision 1.17  2006/03/14 03:02:58  mikehamada
-  // Changed InitializeGame(), added BoardRep, changed BoardPiece
-  //
-  // Revision 1.16  2006/03/08 01:22:30  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.15  2006/03/08 01:19:37  mikehamada
-  // Formatted DoMove Code
-  //
-  // Revision 1.14  2006/03/02 05:43:16  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.13  2006/02/27 23:37:40  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.12  2006/02/27 23:28:08  mikehamada
-  // Fixed Errors in DoMove and Primitive
-  //
-  // Revision 1.11  2006/02/27 00:19:08  alexchoy
-  // wrote DoMove and GetInitialPosition, untested
-  //
-  // Revision 1.9  2006/02/26 08:31:26  mikehamada
-  // Fixed errors that prevented game from being built
-  // Edited InitializeGame(), PrintPosition() to use new hashes
-  // Fixed struct for board representation
-  // Changed PrintPosition() since Extended-ASCII does not work
-  // Changed arrayHash() to use a for-loop to calculate hash
-  // Wrote Primitive() (unsure if it is finished or not)
-  //
-  // Revision 1.8  2006/02/25 19:20:15  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.7  2006/02/25 09:33:55  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.6  2006/02/25 06:32:09  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.5  2006/02/24 17:34:43  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.4  2006/02/23 07:19:20  mikehamada
-  // *** empty log message ***
-  //
-  // Revision 1.3  2006/02/22 09:49:04  alexchoy
-  // edited unhash and hash to make them more correct
-  //
-  // Revision 1.2  2006/02/22 09:37:24  alexchoy
-  // added hashing and unhashing functions
-  //
-  // Revision 1.1  2006/02/20 19:36:45  mikehamada
-  // First addition to repository for Topitop by Mike Hamada
-  // Setup #defines & data-structs
-  // Wrote InitializeGame() and PrintPosition()
-  //
-  // Revision 1.7  2006/01/29 09:59:47  ddgarcia
-  // Removed "gDatabase" reference from comment in InitializeGame
-  //
-  // Revision 1.6  2005/12/27 10:57:50  hevanm
-  // almost eliminated the existance of gDatabase in all files, with some declarations commented earlier that need to be hunt down and deleted from the source file.
-  //
-  // Revision 1.5  2005/10/06 03:06:11  hevanm
-  // Changed kDebugDetermineValue to be FALSE.
-  //
-  // Revision 1.4  2005/05/02 17:33:01  nizebulous
-  // mtemplate.c: Added a comment letting people know to include gSymmetries
-  //           in their getOption/setOption hash.
-  // mttc.c: Edited to handle conflicting types.  Created a PLAYER type for
-  //         gamesman.  mttc.c had a PLAYER type already, so I changed it.
-  // analysis.c: Changed initialization of option variable in analyze() to -1.
-  // db.c: Changed check in the getter functions (GetValueOfPosition and
-  //       getRemoteness) to check if gMenuMode is Evaluated.
-  // gameplay.c: Removed PlayAgainstComputer and PlayAgainstHuman.  Wrote PlayGame
-  //             which is a generic version of the two that uses to PLAYER's.
-  // gameplay.h: Created the necessary structs and types to have PLAYER's, both
-  //          Human and Computer to be sent in to the PlayGame function.
-  // gamesman.h: Really don't think I changed anything....
-  // globals.h: Also don't think I changed anything....both these I just looked at
-  //            and possibly made some format changes.
-  // textui.c: Redid the portion of the menu that allows you to choose opponents
-  //        and then play a game.  Added computer vs. computer play.  Also,
-  //           changed the analysis part of the menu so that analysis should
-  //        work properly with symmetries (if it is in getOption/setOption hash).
-  //
-  // Revision 1.3  2005/03/10 02:06:47  ogren
-  // Capitalized CVS keywords, moved Log to the bottom of the file - Elmer
-  //
 POSITION StringToPosition(char* board) {
 	POSITION pos = INVALID_POSITION;
 	GetValue(board, "pos", GetUnsignedLongLong, &pos);
